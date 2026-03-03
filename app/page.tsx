@@ -1,4 +1,4 @@
-import { auth, signIn } from "@/auth"
+import { auth, signIn } from "../../auth" // Voltando duas pastas para achar o auth.ts na raiz
 import { redirect } from "next/navigation"
 
 export default async function LoginPage() {
@@ -11,7 +11,7 @@ export default async function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-black text-white">
       <div className="text-center p-10 border border-zinc-800 rounded-2xl bg-zinc-900">
-        <h1 className="text-2xl font-bold mb-6">My-IA-0V</h1>
+        <h1 className="text-2xl font-bold mb-6">Login My-IA-0V</h1>
         <form action={async () => { "use server"; await signIn("github") }}>
           <button className="bg-white text-black px-6 py-3 rounded-lg font-bold hover:bg-zinc-200 transition">
             Entrar com GitHub
