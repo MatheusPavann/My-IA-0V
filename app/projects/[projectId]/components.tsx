@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 interface NewChatButtonProps {
   projectId: string
   showText?: string
-}
+} 
 
 export function NewChatButton({
   projectId,
