@@ -2,101 +2,77 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import PromptComponent from '../components/prompt-component'
-import ApiKeyError from '../components/api-key-error'
-import RateLimitDialog from '../components/rate-limit-dialog'
-import ErrorDialog from '../components/error-dialog'
-import { useApiValidation } from '../../lib/hooks/useApiValidation'
+// Note os dois pontos extras aqui embaixo para subir as pastas corretamente
+import PromptComponent from '../../components/prompt-component'
+import ApiKeyError from '../../components/api-key-error'
+import RateLimitDialog from '../../components/rate-limit-dialog'
+import ErrorDialog from '../../components/error-dialog'
+import { useApiValidation } from '../../../lib/hooks/useApiValidation'
 
-export default function DashboardPage() {
-  const router = useRouter()
+export default function ProjectPage() {
   const params = useParams()
-  
+  const router = useRouter()
+  const projectId = params.projectId as string
+
   // Estados da UI
   const [isLoading, setIsLoading] = useState(false)
   const [projects, setProjects] = useState<any[]>([])
   const [projectsLoaded, setProjectsLoaded] = useState(false)
-  const [selectedProjectId, setSelectedProjectId] = useState('new')
+  const [selectedProjectId, setSelectedProjectId] = useState(projectId)
   const [selectedChatId, setSelectedChatId] = useState('new')
   const [projectChats, setProjectChats] = useState<any[]>([])
   
-  // Estados de Erro e Rate Limit
   const [showRateLimitDialog, setShowRateLimitDialog] = useState(false)
   const [rateLimitInfo, setRateLimitInfo] = useState<{ resetTime?: string; remaining?: number }>({})
   const [showErrorDialog, setShowErrorDialog] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
 
-  // Validação da API (Hook personalizado)
   const { isValidating, showApiKeyError } = useApiValidation()
 
-  // Carregar projetos ao montar a página
   useEffect(() => {
-    if (!isValidating && !showApiKeyError) {
-      loadProjects()
+    if (!isValidating && !showApiKeyError && projectId) {
+      loadProjectData(projectId)
     }
-  }, [isValidating, showApiKeyError])
+  }, [isValidating, showApiKeyError, projectId])
 
-  const loadProjects = async () => {
+  const loadProjectData = async (id: string) => {
     try {
-      const response = await fetch('/api/projects')
+      const response = await fetch(`/api/projects/${id}`)
       if (response.ok) {
         const data = await response.json()
-        setProjects(data.data || data || [])
+        setProjectChats(data.chats || [])
+        setSelectedProjectId(id)
         setProjectsLoaded(true)
       }
     } catch (err) {
-      console.error("Erro ao carregar projetos")
+      console.error("Erro ao carregar dados do projeto")
     }
   }
 
-  const handleProjectChange = (newProjectId: string) => {
-    if (newProjectId === 'new') {
-      setSelectedProjectId('new')
-      setSelectedChatId('new')
-      setProjectChats([])
-    } else {
-      router.push(`/projects/${newProjectId}`)
-    }
-  }
-
-  const handleSubmit = async (
-    prompt: string,
-    settings: { modelId: string; imageGenerations: boolean; thinking: boolean },
-    attachments?: { url: string; name?: string; type?: string }[]
-  ) => {
+  const handleSubmit = async (prompt: string, settings: any) => {
     setIsLoading(true)
     try {
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: prompt,
-          modelId: settings.modelId,
-          imageGenerations: settings.imageGenerations,
-          thinking: settings.thinking,
-          ...(attachments && attachments.length > 0 && { attachments }),
+        body: JSON.stringify({ 
+          message: prompt, 
+          projectId: projectId,
+          ...settings 
         }),
       })
 
       if (!response.ok) {
         const errorData = await response.json()
-        if (response.status === 429) {
-          setRateLimitInfo(errorData)
-          setShowRateLimitDialog(true)
-        } else {
-          setErrorMessage(errorData.error || 'Falha ao gerar resposta')
-          setShowErrorDialog(true)
-        }
+        setErrorMessage(errorData.error || 'Erro na geração')
+        setShowErrorDialog(true)
         return
       }
 
       const data = await response.json()
-      const newChatId = data.id || data.chatId
-      const projectId = data.projectId || 'default'
-      
-      router.push(`/projects/${projectId}/chats/${newChatId}`)
+      router.push(`/projects/${projectId}/chats/${data.id || data.chatId}`)
     } catch (err) {
-      setErrorMessage('Erro de conexão com o servidor')
+      setErrorMessage('Erro de conexão')
       setShowErrorDialog(true)
     } finally {
       setIsLoading(false)
@@ -107,33 +83,27 @@ export default function DashboardPage() {
 
   return (
     <div className="relative min-h-dvh bg-background">
-      {/* Mensagem de Boas-vindas ao centro */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div className="text-center px-4" style={{ transform: 'translateY(-25%)' }}>
-          <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-4">
-            My IA 0V
+          <h1 className="text-4xl font-bold mb-4 italic text-zinc-500">
+            Project: {projectId}
           </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Crie sua aplicação com inteligência artificial.
-          </p>
         </div>
       </div>
 
-      {/* Componente de Input de Prompt */}
       <PromptComponent
         onSubmit={handleSubmit}
         isLoading={isLoading}
-        placeholder="Descreva o que você quer criar..."
+        placeholder="Continue editando seu projeto..."
         showDropdowns={projectsLoaded}
         projects={projects}
         projectChats={projectChats}
         currentProjectId={selectedProjectId}
         currentChatId={selectedChatId}
-        onProjectChange={handleProjectChange}
+        onProjectChange={(id) => id === 'new' ? router.push('/dashboard') : router.push(`/projects/${id}`)}
         onChatChange={(id) => setSelectedChatId(id)}
       />
 
-      {/* Diálogos de Erro e Limite */}
       <RateLimitDialog
         isOpen={showRateLimitDialog}
         onClose={() => setShowRateLimitDialog(false)}
