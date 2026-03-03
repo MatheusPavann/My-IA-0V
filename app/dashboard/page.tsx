@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-// Aqui estão os caminhos corrigidos para funcionar dentro da pasta dashboard
 import PromptComponent from '../components/prompt-component'
 import ApiKeyError from '../components/api-key-error'
 import RateLimitDialog from '../components/rate-limit-dialog'
