@@ -1,4 +1,4 @@
-import { auth, signIn } from "../../auth" // Voltando duas pastas para achar o auth.ts na raiz
+import { auth, signIn } from "../auth" // Voltando duas pastas para achar o auth.ts na raiz
 import { redirect } from "next/navigation"
 
 export default async function LoginPage() {
