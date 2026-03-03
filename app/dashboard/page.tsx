@@ -6,7 +6,7 @@ import PromptComponent from '../components/prompt-component'
 import ApiKeyError from '../components/api-key-error'
 import RateLimitDialog from '../components/rate-limit-dialog'
 import ErrorDialog from '../components/error-dialog'
-import { useApiValidation } from '../../lib/hooks/useApiValidation'
+import { useApiValidation } from '../../lib/hooks/useApiValidation' 
 
 export default function DashboardPage() {
   const params = useParams()
