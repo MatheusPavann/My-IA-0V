@@ -1,9 +1,17 @@
 'use client'
 
-import { useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import { useApiValidation } from '../../../lib/hooks/useApiValidation'
-import ApiKeyError from '../../components/api-key-error'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+
+// Como o arquivo está em /app/dashboard/ e a pasta que você quer está em /app/components/
+// Você só precisa de UM PAR de pontos para subir para a pasta 'app'
+import PromptComponent from '../components/prompt-component'
+import ApiKeyError from '../components/api-key-error'
+import RateLimitDialog from '../components/rate-limit-dialog'
+import ErrorDialog from '../components/error-dialog'
+
+// Para a pasta 'lib', que está FORA da pasta 'app', você precisa de DOIS PARES
+import { useApiValidation } from '../../lib/hooks/useApiValidation'
 
 export default function ProjectPage() {
   const params = useParams()
