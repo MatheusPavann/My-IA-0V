@@ -3,7 +3,10 @@ import { redirect } from "next/navigation"
 
 export default async function LoginPage() {
   const session = await auth()
-  if (session) redirect("/dashboard") // Se já logou, pula pro site
+  
+  if (session) {
+    redirect("/dashboard")
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-black text-white">
